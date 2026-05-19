@@ -1,0 +1,2 @@
+# MediRx
+Medicine precription generattion
