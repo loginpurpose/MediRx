@@ -84,6 +84,7 @@
         .prescription-container {
             background: #ffffff !important;
             width: 5.8in; /* Hardcoded A5 Metric specs */
+            max-width: 100%; /* Prevents mobile clipping, safely scaling content down */
             min-height: 8.3in;
             padding: 0.6in 0.5in;
             margin-bottom: 2rem;
@@ -122,6 +123,7 @@
         .date-display {
             font-size: 13px;
             font-weight: bold;
+            white-space: nowrap;
         }
         
         /* PATIENT METADATA DISPLAY WITH LARGER FONTS & SPACING ADJUSTMENTS */
@@ -129,22 +131,24 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 1.8rem; 
-            font-size: 17px; /* Increased by 2px */
+            font-size: 17px; 
             padding-bottom: 0.4rem;
+            gap: 10px;
         }
 
         .patient-name-wrapper {
-            padding-left: 1.7rem; /* Space added before patient name */
+            padding-left: 1.7rem; 
         }
 
         .patient-mrd-wrapper {
-            padding-right: 1.7rem; /* Space added after MRD No */
+            padding-right: 1.7rem; 
+            text-align: right;
         }
 
         .meta-label {
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 15px; /* Increased by 2px */
+            font-size: 15px; 
             color: #444444;
         }
 
@@ -166,6 +170,7 @@
             font-size: 16px;
             font-style: bold;
             padding: 0.2rem 0;
+            gap: 10px;
         }
 
         .lab-hc-wrap {
@@ -174,6 +179,7 @@
 
         .lab-vitd-wrap {
             margin-right: 2.5rem; 
+            text-align: right;
         }
 
         /* MEDICATION TEXT CONTAINER LAYOUT */
@@ -263,6 +269,7 @@
                 box-shadow: none !important; 
                 border: none !important; 
                 width: 5.8in !important; 
+                max-width: 5.8in !important;
                 height: 8.3in !important; 
                 padding: 0.4in 0.4in !important; 
                 margin: 0 !important; 
@@ -285,6 +292,32 @@
             .prescription-container { 
                 width: 100%; 
                 min-height: auto; 
+                padding: 0.4in 0.3in; /* Scaled down slightly on mobile screens to optimize readability */
+                font-size: 14px; /* Enhanced baseline text for display scanning clarity */
+            }
+            /* Safeguard positions under adaptive sizing */
+            .patient-meta-inline, .lab-horizontal-row {
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: 0.4rem;
+            }
+            .patient-name-wrapper, .lab-hc-wrap {
+                padding-left: 0;
+                margin-left: 0;
+            }
+            .patient-mrd-wrapper, .lab-vitd-wrap {
+                padding-right: 0;
+                margin-right: 0;
+                text-align: left;
+            }
+            .footer {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                right: auto;
+                margin-top: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
             }
             .action-buttons { 
                 flex-direction: column; 
@@ -328,9 +361,9 @@
             <!-- Lab Results Row with padding elements replicating custom tab markers -->
             <div class="section-title"></div>
             <div class="lab-horizontal-row">
-                <div class="lab-hc-wrap">HC: <span id="labHc" class="value-highlight">-</span> g/dL</div>
-                <div>Fe: <span id="labFe" class="value-highlight">-</span> ng/mL</div>
-                <div class="lab-vitd-wrap">Vit D: <span id="labVitD" class="value-highlight">-</span> ng/mL</div>
+                <div class="lab-hc-wrap">HC: <span id="labHc" class="value-highlight">-</span></div>
+                <div>Fe: <span id="labFe" class="value-highlight">-</span></div>
+                <div class="lab-vitd-wrap">Vit D: <span id="labVitD" class="value-highlight">-</span></div>
             </div>
 
             <!-- Medications Listing -->
@@ -360,11 +393,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Priority Check: read direct active workspace payload first to sync with generate.html redirect workflow
+            const activeSessionItem = localStorage.getItem('currentPrescription');
             const index = localStorage.getItem('currentPrescriptionIndex');
             const prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
             
+            if (activeSessionItem) {
+                displayPrescription(JSON.parse(activeSessionItem));
+            }
             // Fix: If an index exists and matches a history record, view it.
-            if (index !== null && prescriptions[parseInt(index)]) {
+            else if (index !== null && prescriptions[parseInt(index)]) {
                 displayPrescription(prescriptions[parseInt(index)]);
             } 
             // Fix: If no index but individual item exists directly from an old single-save model
@@ -381,7 +419,7 @@
             }
             // Fix: Fall back to showing the latest item in the array if index isn't passed correctly
             else if (prescriptions.length > 0) {
-                displayPrescription(prescriptions[prescriptions.length - 1]);
+                displayPrescription(prescriptions[0]);
             }
             // Show clean default placeholder layout structure instead of crashing out an error state
             else {
@@ -400,9 +438,9 @@
         function generateMedications(prescription) {
             const medications = [];
             
-            const hc = parseFloat(prescription.hc !== undefined ? prescription.hc : prescription.hcValue);
-            const fe = parseFloat(prescription.fe !== undefined ? prescription.fe : prescription.feValue);
-            const vitd = parseFloat(prescription.vitd !== undefined ? prescription.vitd : prescription.vitdValue);
+            const hc = parseFloat(prescription.hc !== undefined && prescription.hc !== 'N/A' ? prescription.hc : prescription.hcValue);
+            const fe = parseFloat(prescription.fe !== undefined && prescription.fe !== 'N/A' ? prescription.fe : prescription.feValue);
+            const vitd = parseFloat(prescription.vitd !== undefined && prescription.vitd !== 'N/A' ? prescription.vitd : prescription.vitdValue);
 
             // HC (Hemoglobin) Logic
             if (!isNaN(hc)) {
@@ -449,9 +487,14 @@
             document.getElementById('prescriptionMrd').textContent = prescription.mrd || prescription.patientMrd || 'N/A';
             document.getElementById('patientName').textContent = prescription.name || prescription.patientName || 'N/A';
             
-            document.getElementById('labHc').textContent = prescription.hc !== 'N/A' ? (prescription.hc || prescription.hcValue || '-') : '-';
-            document.getElementById('labFe').textContent = prescription.fe !== 'N/A' ? (prescription.fe || prescription.feValue || '-') : '-';
-            document.getElementById('labVitD').textContent = prescription.vitd !== 'N/A' ? (prescription.vitd || prescription.vitdValue || '-') : '-';
+            // Render laboratory metrics cleanly without trailing unit text interference if undefined or N/A
+            const hcVal = prescription.hc !== 'N/A' ? (prescription.hc || prescription.hcValue || '-') : '-';
+            const feVal = prescription.fe !== 'N/A' ? (prescription.fe || prescription.feValue || '-') : '-';
+            const vitdVal = prescription.vitd !== 'N/A' ? (prescription.vitd || prescription.vitdValue || '-') : '-';
+
+            document.getElementById('labHc').textContent = hcVal !== '-' ? `${hcVal} g/dL` : '-';
+            document.getElementById('labFe').textContent = feVal !== '-' ? `${feVal} ng/mL` : '-';
+            document.getElementById('labVitD').textContent = vitdVal !== '-' ? `${vitdVal} ng/mL` : '-';
             
             const meds = generateMedications(prescription);
             const container = document.getElementById('medicationRows');
@@ -462,7 +505,12 @@
                 </div>
             `).join('');
             
-            document.getElementById('generatedTime').textContent = new Date().toLocaleString('en-GB', { hour12: true });
+            // Set dynamic generated timestamp from past save context if accessible, else create new stamp execution
+            if (prescription.timestamp) {
+                document.getElementById('generatedTime').textContent = new Date(prescription.timestamp).toLocaleString('en-GB', { hour12: true });
+            } else {
+                document.getElementById('generatedTime').textContent = new Date().toLocaleString('en-GB', { hour12: true });
+            }
         }
 
         function printCurrent() {
