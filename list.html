@@ -190,7 +190,6 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-container">
-            <!-- Modified: Changed href to "#" and added an id for dynamic routing -->
             <a href="#" id="dashboardBtn" class="btn-back">
                 <i class="fas fa-arrow-left"></i> 
             </a>
@@ -219,22 +218,40 @@
 
     <script>
         let allPrescriptions = [];
+        // Target backend routing path configuration (Change this URL path to match your API endpoint)
+        const API_URL = '/api/prescriptions'; 
 
-        // Added: Function to evaluate the logged-in user role and update the link
         function setupDashboardLink() {
-            const role = localStorage.getItem('userRole'); // Expects 'admin' or 'user'
+            const role = localStorage.getItem('userRole'); 
             const dashboardBtn = document.getElementById('dashboardBtn');
             
             if (role === 'admin') {
                 dashboardBtn.href = 'admin.html';
             } else {
-                dashboardBtn.href = 'user.html'; // Default fallback for patient/user logs
+                dashboardBtn.href = 'user.html'; 
             }
         }
 
-        function loadPrescriptions() {
-            allPrescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
+        // Updated: Modified to fetch data via network requests to allow cross-device synchronization
+        async function loadPrescriptions() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    allPrescriptions = await response.json();
+                    // Keep fallback local reference synchronized
+                    localStorage.setItem('prescriptions', JSON.stringify(allPrescriptions));
+                } else {
+                    useLocalStorageFallback();
+                }
+            } catch (error) {
+                console.warn("Backend database unreachable. Falling back to local device cache.");
+                useLocalStorageFallback();
+            }
             renderPrescriptions('');
+        }
+
+        function useLocalStorageFallback() {
+            allPrescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
         }
 
         function renderPrescriptions(filter = '') {
@@ -258,7 +275,7 @@
             }
 
             list.innerHTML = filtered.map((prescription, globalIndex) => {
-                const date = new Date(prescription.date).toLocaleDateString('en-GB');
+                const date = prescription.date ? new Date(prescription.date).toLocaleDateString('en-GB') : 'N/A';
                 const medsCount = prescription.medicines ? prescription.medicines.length : 0;
                 
                 return `
@@ -283,7 +300,7 @@
                             <a href="#" class="btn btn-print" onclick="printPrescription(${globalIndex}); return false;">
                                 <i class="fas fa-print"></i> Print
                             </a>
-                            <button class="btn btn-delete" onclick="deletePrescription(${globalIndex}); return false;">
+                            <button class="btn btn-delete" onclick="deletePrescription(${globalIndex}, ${prescription.id || null}); return false;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -294,11 +311,13 @@
 
         function viewPrescription(index) {
             localStorage.setItem('currentPrescriptionIndex', index);
+            localStorage.setItem('currentPrescription', JSON.stringify(allPrescriptions[index]));
             window.location.href = 'view.html';
         }
 
         function printPrescription(index) {
             localStorage.setItem('currentPrescriptionIndex', index);
+            localStorage.setItem('currentPrescription', JSON.stringify(allPrescriptions[index]));
             window.open('view.html', '_blank');
         }
 
@@ -311,8 +330,16 @@
             localStorage.removeItem('editPrescriptionIndex');
         }
 
-        function deletePrescription(index) {
+        // Updated: Handled removing elements from remote database as well
+        async function deletePrescription(index, dbId) {
             if (confirm(`Delete "${allPrescriptions[index].name}"?`)) {
+                if (dbId) {
+                    try {
+                        await fetch(`${API_URL}/${dbId}`, { method: 'DELETE' });
+                    } catch (e) {
+                        console.error("Failed to delete from network database server.");
+                    }
+                }
                 allPrescriptions.splice(index, 1);
                 localStorage.setItem('prescriptions', JSON.stringify(allPrescriptions));
                 loadPrescriptions();
@@ -323,7 +350,6 @@
             renderPrescriptions(e.target.value);
         });
 
-        // Initialize setup on page display
         setupDashboardLink();
         loadPrescriptions();
     </script>
