@@ -6,6 +6,8 @@
     <title>MediPrescript - View Prescription</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <!-- Loaded Noto Sans Devanagari for perfect universal cross-device Marathi rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { 
@@ -189,6 +191,7 @@
         .medication-entry {
             margin-bottom: 0.8rem; 
             line-height: 1.5;
+            font-size: 13px;
         }
 
         /* Custom alignment layout wrapper for un-bulleted text extensions */
@@ -196,6 +199,15 @@
             margin-bottom: 0.8rem;
             line-height: 1.5;
             padding-left: 1.2rem; 
+            font-size: 13px;
+        }
+
+        /* Inline styling rule for clean, localized Marathi visibility */
+        .marathi-text {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            color: #444444;
+            font-size: 12.5px;
+            margin-left: 4px;
         }
 
         .value-highlight {
@@ -267,27 +279,53 @@
 
         /* HARDWARE SYSTEM PRINT OVERRIDES */
         @media print {
-            body { 
-                background: none !important; 
-                padding: 0 !important; 
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                display: block !important;
+                text-align: center !important; /* Forces structural content balancing inside the root */
             }
-            .prescription-container { 
-                box-shadow: none !important; 
-                border: none !important; 
-                width: 5.8in !important; 
-                max-width: 5.8in !important;
-                height: 8.3in !important; 
-                padding: 0.4in 0.4in !important; 
-                margin: 0 !important; 
-                position: static !important; 
+
+            .main-container {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                padding: 0 !important;
+            }
+
+            /* Perfect centering container mapping */
+            .prescription-container {
+                box-shadow: none !important;
+                border: none !important;
                 border-radius: 0px !important;
+                
+                width: 5.8in !important;
+                max-width: 5.8in !important;
+                height: 8.3in !important;
+                min-height: 8.3in !important;
+                
+                padding: 0.6in 0.5in !important; 
+                
+                /* Explicit margin setup blocks any rightward leaning layout skewing */
+                margin: 0 auto !important; 
+                text-align: left; /* Restores standard content flow within sheet boundaries */
+                
+                position: relative !important;
+                display: block !important;
+                page-break-inside: avoid !important;
             }
+
             .action-buttons, .navbar { 
                 display: none !important; 
             }
-            @page { 
-                size: A5; 
-                margin: 0; 
+
+            @page {
+                size: A5 portrait;
+                margin: 0 !important; /* Suppresses default browser header and footer stamps */
             }
         }
 
@@ -444,44 +482,108 @@
 
             // HC (Hemoglobin) Logic
             if (!isNaN(hc)) {
-                 if (hc >= 7 && hc <= 19) {
-                    medications.push({ name: "subneuro B6 / Matilda forte / ME 12 OD", dosage: "once in a day after dinner", duration: "Forever" });
-                    medications.push({ name: "Supracal / Celol / Xtracal", dosage: "once in a day after dinner", duration: "Forever" });
+                if (hc >= 7 && hc <= 19) {
+                    medications.push({ 
+                        name: "subneuro B6 / Matilda forte / ME 12 OD", 
+                        dosageEn: "once in a day after dinner", dosageMr: "दिवसातून एकदा रात्रीच्या जेवणानंतर", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
+                    medications.push({ 
+                        name: "Supracal / Celol / Xtracal", 
+                        dosageEn: "once in a day after dinner", dosageMr: "दिवसातून एकदा रात्रीच्या जेवणानंतर", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 } else if (hc > 20) {
-                    medications.push({ name: "Inj. Nervijen 1500 plus", dosage: "Once a week", duration: "For 6 weeks. Then start following tablet" });
-                    medications.push({ name: "subneuro B6 / Matilda forte / ME 12 OD", dosage: "once in a day after dinner", duration: "Forever" });
+                    medications.push({ 
+                        name: "Inj. Nervijen 1500 plus", 
+                        dosageEn: "Once a week", dosageMr: "आठवड्यातून एकदा", 
+                        durationEn: "For 6 weeks. Then start following tablet", durationMr: "६ आठवड्यांसाठी. नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "subneuro B6 / Matilda forte / ME 12 OD", 
+                        dosageEn: "once in a day after dinner", dosageMr: "दिवसातून एकदा रात्रीच्या जेवणानंतर", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 }
             }
 
             // Fe (Ferritin) Logic
             if (!isNaN(fe)) {
                 if (fe <= 20) {
-                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: " 3 doses. Then start following tablet" });
-                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day", duration: "12 months" });
+                    medications.push({ 
+                        name: "Inj. Irny 1 gm / Ferium 1 gm", 
+                        dosageEn: "Once in 15 days", dosageMr: "१५ दिवसांतून एकदा", 
+                        durationEn: "3 doses. Then start following tablet", durationMr: "३ डोस. नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "orofer XT / livogen / Autrin", 
+                        dosageEn: "Alternate day", dosageMr: "एक दिवसा आड", 
+                        durationEn: "12 months", durationMr: "१२ महिन्यांसाठी" 
+                    });
                 } else if (fe > 20 && fe < 30) {
-                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: " 2 doses. Then start following tablet" });
-                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day", duration: "12 months" });
+                    medications.push({ 
+                        name: "Inj. Irny 1 gm / Ferium 1 gm", 
+                        dosageEn: "Once in 15 days", dosageMr: "१५ दिवसांतून एकदा", 
+                        durationEn: "2 doses. Then start following tablet", durationMr: "२ डोस. नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "orofer XT / livogen / Autrin", 
+                        dosageEn: "Alternate day", dosageMr: "एक दिवसा आड", 
+                        durationEn: "12 months", durationMr: "१२ महिन्यांसाठी" 
+                    });
                 } else if (fe >= 30) {
-                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day ", duration: "Forever" });
+                    medications.push({ 
+                        name: "orofer XT / livogen / Autrin", 
+                        dosageEn: "Alternate day", dosageMr: "एक दिवसा आड", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 }
             }
 
             // Vit D Logic
             if (!isNaN(vitd)) {
                 if (vitd <= 10) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 5 weeks. Then start following tablet" });
-                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
+                    medications.push({ 
+                        name: "Inj. Arachitol 6 LU", 
+                        dosageEn: "Once a week", dosageMr: "आठवड्यातून एकदा", 
+                        durationEn: "For 5 weeks. Then start following tablet", durationMr: "५ आठवड्यांसाठी. नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "Uprise/Tayo 60k", 
+                        dosageEn: "Once a month", dosageMr: "महिन्यातून एकदा", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 } else if (vitd > 10 && vitd < 20) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 3 weeks. Then start following tablet" });
-                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
+                    medications.push({ 
+                        name: "Inj. Arachitol 6 LU", 
+                        dosageEn: "Once a week", dosageMr: "आठवड्यातून एकदा", 
+                        durationEn: "For 3 weeks. Then start following tablet", durationMr: "३ आठवड्यांसाठी. नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "Uprise/Tayo 60k", 
+                        dosageEn: "Once a month", dosageMr: "महिन्यातून एकदा", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 } else if (vitd >= 20) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Single Dose", duration: "Then start following tablet" });
-                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
+                    medications.push({ 
+                        name: "Inj. Arachitol 6 LU", 
+                        dosageEn: "Single Dose", dosageMr: "एकदा", 
+                        durationEn: "Then start following tablet", durationMr: "नंतर खालील गोळी सुरू करणे" 
+                    });
+                    medications.push({ 
+                        name: "Uprise/Tayo 60k", 
+                        dosageEn: "Once a month", dosageMr: "महिन्यातून एकदा", 
+                        durationEn: "Forever", durationMr: "नेहमी" 
+                    });
                 }
             }
 
             if (medications.length === 0) {
-                medications.push({ name: "No therapeutic modifications required", dosage: "-", duration: "Routine review" });
+                medications.push({ 
+                    name: "No therapeutic modifications required", 
+                    dosageEn: "-", dosageMr: "-", 
+                    durationEn: "Routine review", durationMr: "नियमित तपासणी" 
+                });
             }
 
             return medications;
@@ -509,27 +611,28 @@
             let skipNextBullet = false;
 
             meds.forEach((med) => {
+                // Formatting layout: English Text first, followed directly by Marathi inline container tags
+                const dosageString = `${med.dosageEn} <span class="marathi-text">(${med.dosageMr})</span>`;
+                const durationString = `${med.durationEn} <span class="marathi-text">(${med.durationMr})</span>`;
+
                 if (skipNextBullet) {
-                    // Render on next line without bullet prefix, using specialized padding alignment
                     htmlOutput += `
                         <div class="medication-entry-indent">
-                            <strong>${med.name}</strong> — ${med.dosage} (${med.duration})
+                            <strong>${med.name}</strong> — ${dosageString} (${durationString})
                         </div>
                     `;
-                    // Reset condition flag back to normal execution state
                     skipNextBullet = false;
                 } else {
-                    // Render traditional incremented bullet step layout
                     htmlOutput += `
                         <div class="medication-entry">
-                            <strong>${bulletNumber}. ${med.name}</strong> — ${med.dosage} (${med.duration})
+                            <strong>${bulletNumber}. ${med.name}</strong> — ${dosageString} (${durationString})
                         </div>
                     `;
                     bulletNumber++;
                 }
 
-                // Check string context parameters to look-ahead for subsequent continuous layout overrides
-                if (med.duration && med.duration.toLowerCase().includes("start following tablet")) {
+                // Check text parameters using the English tracking string to catch subsequent continuous steps
+                if (med.durationEn && med.durationEn.toLowerCase().includes("start following tablet")) {
                     skipNextBullet = true;
                 }
             });
