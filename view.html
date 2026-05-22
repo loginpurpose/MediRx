@@ -279,53 +279,39 @@
 
         /* HARDWARE SYSTEM PRINT OVERRIDES */
         @media print {
-            html, body {
-                background: #ffffff !important;
-                margin: 0 !important;
-                padding: 0 !important;
+            body { 
+                background: none !important; 
+                padding: 0 !important; 
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 100vh !important;
                 width: 100% !important;
-                height: 100% !important;
-                display: block !important;
-                text-align: center !important; /* Forces structural content balancing inside the root */
             }
-
             .main-container {
-                display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                margin: 0 auto !important;
-                padding: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
             }
-
-            /* Perfect centering container mapping */
-            .prescription-container {
-                box-shadow: none !important;
-                border: none !important;
-                border-radius: 0px !important;
-                
-                width: 5.8in !important;
+            .prescription-container { 
+                box-shadow: none !important; 
+                border: none !important; 
+                width: 5.8in !important; 
                 max-width: 5.8in !important;
-                height: 8.3in !important;
-                min-height: 8.3in !important;
-                
-                padding: 0.6in 0.5in !important; 
-                
-                /* Explicit margin setup blocks any rightward leaning layout skewing */
+                height: 8.3in !important; 
+                padding: 0.4in 0.4in !important; 
                 margin: 0 auto !important; 
-                text-align: left; /* Restores standard content flow within sheet boundaries */
-                
-                position: relative !important;
-                display: block !important;
-                page-break-inside: avoid !important;
+                position: relative !important; 
+                border-radius: 0px !important;
             }
-
             .action-buttons, .navbar { 
                 display: none !important; 
             }
-
-            @page {
-                size: A5 portrait;
-                margin: 0 !important; /* Suppresses default browser header and footer stamps */
+            @page { 
+                size: A5; 
+                margin: 0; 
             }
         }
 
@@ -649,7 +635,6 @@
         function printCurrent() {
             window.print();
         }
-        
     </script>
 </body>
 </html>
