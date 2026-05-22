@@ -444,7 +444,7 @@
 
             // HC (Hemoglobin) Logic
             if (!isNaN(hc)) {
-                if (hc <= 7) {
+                 if (hc >= 7 && hc <= 19) {
                     medications.push({ name: "subneuro B6 / Matilda forte / ME 12 OD", dosage: "once in a day after dinner", duration: "Forever" });
                     medications.push({ name: "Supracal / Celol / Xtracal", dosage: "once in a day after dinner", duration: "Forever" });
                 } else if (hc > 20) {
