@@ -23,7 +23,6 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            /* Deep Purple to Light Pink Gradient */
             background: linear-gradient(135deg, #2e1065 0%, #701a75 40%, #fbcfe8 100%);
             background-size: cover;
             background-attachment: fixed;
@@ -83,8 +82,8 @@
         /* CLEAN PROFESSIONAL A5 SLIP SHEET CONTAINER */
         .prescription-container {
             background: #ffffff !important;
-            width: 5.8in; /* Hardcoded A5 Metric specs */
-            max-width: 100%; /* Prevents mobile clipping, safely scaling content down */
+            width: 5.8in; 
+            max-width: 100%; 
             min-height: 8.3in;
             padding: 0.6in 0.5in;
             margin-bottom: 2rem;
@@ -192,6 +191,13 @@
             line-height: 1.5;
         }
 
+        /* Custom alignment layout wrapper for un-bulleted text extensions */
+        .medication-entry-indent {
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+            padding-left: 1.2rem; 
+        }
+
         .value-highlight {
             font-weight: bold;
             color: #000000;
@@ -292,10 +298,9 @@
             .prescription-container { 
                 width: 100%; 
                 min-height: auto; 
-                padding: 0.4in 0.3in; /* Scaled down slightly on mobile screens to optimize readability */
-                font-size: 14px; /* Enhanced baseline text for display scanning clarity */
+                padding: 0.4in 0.3in; 
+                font-size: 14px; 
             }
-            /* Safeguard positions under adaptive sizing */
             .patient-meta-inline, .lab-horizontal-row {
                 flex-direction: column;
                 justify-content: flex-start;
@@ -393,7 +398,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Priority Check: read direct active workspace payload first to sync with generate.html redirect workflow
             const activeSessionItem = localStorage.getItem('currentPrescription');
             const index = localStorage.getItem('currentPrescriptionIndex');
             const prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
@@ -401,11 +405,9 @@
             if (activeSessionItem) {
                 displayPrescription(JSON.parse(activeSessionItem));
             }
-            // Fix: If an index exists and matches a history record, view it.
             else if (index !== null && prescriptions[parseInt(index)]) {
                 displayPrescription(prescriptions[parseInt(index)]);
             } 
-            // Fix: If no index but individual item exists directly from an old single-save model
             else if (localStorage.getItem('prescriptionDate') || localStorage.getItem('patientName')) {
                 const legacyData = {
                     date: localStorage.getItem('prescriptionDate'),
@@ -417,11 +419,9 @@
                 };
                 displayPrescription(legacyData);
             }
-            // Fix: Fall back to showing the latest item in the array if index isn't passed correctly
             else if (prescriptions.length > 0) {
                 displayPrescription(prescriptions[0]);
             }
-            // Show clean default placeholder layout structure instead of crashing out an error state
             else {
                 const defaultSample = {
                     date: new Date().toISOString(),
@@ -445,32 +445,38 @@
             // HC (Hemoglobin) Logic
             if (!isNaN(hc)) {
                 if (hc <= 7) {
-                    medications.push({ name: "subneuro B6 / Matilda forte / ME 12", dosage: "OD", duration: "For Vit B12 management" });
-                    medications.push({ name: "upracal / Celol / Xtracal", dosage: "BD", duration: "Calcium supplementation" });
+                    medications.push({ name: "subneuro B6 / Matilda forte / ME 12 OD", dosage: "once in a day after dinner", duration: "Forever" });
+                    medications.push({ name: "Supracal / Celol / Xtracal", dosage: "once in a day after dinner", duration: "Forever" });
                 } else if (hc > 20) {
-                    medications.push({ name: "Inj. Nervijen 1500 plus", dosage: "Once a week", duration: "For 6 weeks (Vit B12)" });
+                    medications.push({ name: "Inj. Nervijen 1500 plus", dosage: "Once a week", duration: "For 6 weeks. Then start following tablet" });
+                    medications.push({ name: "subneuro B6 / Matilda forte / ME 12 OD", dosage: "once in a day after dinner", duration: "Forever" });
                 }
             }
 
             // Fe (Ferritin) Logic
             if (!isNaN(fe)) {
                 if (fe <= 20) {
-                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: "For 3 doses" });
+                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: " 3 doses. Then start following tablet" });
+                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day", duration: "12 months" });
                 } else if (fe > 20 && fe < 30) {
-                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: "For 2 doses" });
+                    medications.push({ name: "Inj. Irny 1 gm / Ferium 1 gm", dosage: "Once in 15 days", duration: " 2 doses. Then start following tablet" });
+                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day", duration: "12 months" });
                 } else if (fe >= 30) {
-                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "OD", duration: "Oral Maintenance" });
+                    medications.push({ name: "orofer XT / livogen / Autrin", dosage: "Alternate day ", duration: "Forever" });
                 }
             }
 
             // Vit D Logic
             if (!isNaN(vitd)) {
                 if (vitd <= 10) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 5 weeks, then Uprise/Tayo 60k monthly" });
+                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 5 weeks. Then start following tablet" });
+                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
                 } else if (vitd > 10 && vitd < 20) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 3 weeks, then Uprise/Tayo 60k monthly" });
+                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Once a week", duration: "For 3 weeks. Then start following tablet" });
+                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
                 } else if (vitd >= 20) {
-                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Single Dose", duration: "Once a week single booster, then 60k monthly" });
+                    medications.push({ name: "Inj. Arachitol 6 LU", dosage: "Single Dose", duration: "Then start following tablet" });
+                    medications.push({ name: "Uprise/Tayo 60k", dosage: "Once a month", duration: "Forever " });
                 }
             }
 
@@ -487,7 +493,6 @@
             document.getElementById('prescriptionMrd').textContent = prescription.mrd || prescription.patientMrd || 'N/A';
             document.getElementById('patientName').textContent = prescription.name || prescription.patientName || 'N/A';
             
-            // Render laboratory metrics cleanly without trailing unit text interference if undefined or N/A
             const hcVal = prescription.hc !== 'N/A' ? (prescription.hc || prescription.hcValue || '-') : '-';
             const feVal = prescription.fe !== 'N/A' ? (prescription.fe || prescription.feValue || '-') : '-';
             const vitdVal = prescription.vitd !== 'N/A' ? (prescription.vitd || prescription.vitdValue || '-') : '-';
@@ -499,13 +504,38 @@
             const meds = generateMedications(prescription);
             const container = document.getElementById('medicationRows');
             
-            container.innerHTML = meds.map((med, i) => `
-                <div class="medication-entry">
-                    <strong>${i + 1}. ${med.name}</strong> — ${med.dosage} (${med.duration})
-                </div>
-            `).join('');
+            let htmlOutput = "";
+            let bulletNumber = 1;
+            let skipNextBullet = false;
+
+            meds.forEach((med) => {
+                if (skipNextBullet) {
+                    // Render on next line without bullet prefix, using specialized padding alignment
+                    htmlOutput += `
+                        <div class="medication-entry-indent">
+                            <strong>${med.name}</strong> — ${med.dosage} (${med.duration})
+                        </div>
+                    `;
+                    // Reset condition flag back to normal execution state
+                    skipNextBullet = false;
+                } else {
+                    // Render traditional incremented bullet step layout
+                    htmlOutput += `
+                        <div class="medication-entry">
+                            <strong>${bulletNumber}. ${med.name}</strong> — ${med.dosage} (${med.duration})
+                        </div>
+                    `;
+                    bulletNumber++;
+                }
+
+                // Check string context parameters to look-ahead for subsequent continuous layout overrides
+                if (med.duration && med.duration.toLowerCase().includes("start following tablet")) {
+                    skipNextBullet = true;
+                }
+            });
+
+            container.innerHTML = htmlOutput;
             
-            // Set dynamic generated timestamp from past save context if accessible, else create new stamp execution
             if (prescription.timestamp) {
                 document.getElementById('generatedTime').textContent = new Date(prescription.timestamp).toLocaleString('en-GB', { hour12: true });
             } else {
