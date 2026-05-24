@@ -187,7 +187,6 @@
     </style>
 </head>
 <body>
-    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="#" id="dashboardBtn" class="btn-back">
@@ -199,7 +198,6 @@
         </div>
     </nav>
 
-    <!-- MAIN BODY CONTROLS -->
     <div class="main-content">
         <div class="page-header blur-card">
             <div class="page-title">
@@ -218,33 +216,26 @@
 
     <script>
         let allPrescriptions = [];
-        // Target backend routing path configuration (Change this URL path to match your API endpoint)
-        const API_URL = '/api/prescriptions'; 
+        // Pointing to your server endpoint
+        const API_URL = 'http://127.0.0.1:5000/api/regular'; 
 
         function setupDashboardLink() {
             const role = localStorage.getItem('userRole'); 
             const dashboardBtn = document.getElementById('dashboardBtn');
-            
-            if (role === 'admin') {
-                dashboardBtn.href = 'admin.html';
-            } else {
-                dashboardBtn.href = 'user.html'; 
-            }
+            dashboardBtn.href = (role === 'admin') ? 'admin.html' : 'user.html';
         }
 
-        // Updated: Modified to fetch data via network requests to allow cross-device synchronization
         async function loadPrescriptions() {
             try {
                 const response = await fetch(API_URL);
                 if (response.ok) {
                     allPrescriptions = await response.json();
-                    // Keep fallback local reference synchronized
                     localStorage.setItem('prescriptions', JSON.stringify(allPrescriptions));
                 } else {
                     useLocalStorageFallback();
                 }
             } catch (error) {
-                console.warn("Backend database unreachable. Falling back to local device cache.");
+                console.warn("Backend server unreachable. Using local storage data fallback layout.");
                 useLocalStorageFallback();
             }
             renderPrescriptions('');
@@ -286,8 +277,6 @@
                                 <span><i class="fas fa-id-card"></i> ${prescription.mrd || 'N/A'}</span>
                                 <span><i class="fas fa-calendar"></i> ${date}</span>
                                 <span><i class="fas fa-pills"></i> ${medsCount} medicines</span>
-                                ${prescription.hc ? `<span><i class="fas fa-tint"></i> HC: ${prescription.hc}</span>` : ''}
-                                ${prescription.fe ? `<span><i class="fas fa-chart-line"></i> Fe: ${prescription.fe}</span>` : ''}
                             </div>
                         </div>
                         <div class="prescription-actions">
@@ -300,7 +289,7 @@
                             <a href="#" class="btn btn-print" onclick="printPrescription(${globalIndex}); return false;">
                                 <i class="fas fa-print"></i> Print
                             </a>
-                            <button class="btn btn-delete" onclick="deletePrescription(${globalIndex}, ${prescription.id || null}); return false;">
+                            <button class="btn btn-delete" onclick="deletePrescription(${globalIndex}, '${prescription.mrd}'); return false;">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -330,19 +319,16 @@
             localStorage.removeItem('editPrescriptionIndex');
         }
 
-        // Updated: Handled removing elements from remote database as well
-        async function deletePrescription(index, dbId) {
-            if (confirm(`Delete "${allPrescriptions[index].name}"?`)) {
-                if (dbId) {
-                    try {
-                        await fetch(`${API_URL}/${dbId}`, { method: 'DELETE' });
-                    } catch (e) {
-                        console.error("Failed to delete from network database server.");
-                    }
+        async function deletePrescription(index, mrd) {
+            if (confirm(`Delete "${allPrescriptions[index].name}" from data records?`)) {
+                try {
+                    await fetch(`${API_URL}/${mrd}`, { method: 'DELETE' });
+                } catch (e) {
+                    console.error("Failed to delete row directly on server instance.");
                 }
                 allPrescriptions.splice(index, 1);
                 localStorage.setItem('prescriptions', JSON.stringify(allPrescriptions));
-                loadPrescriptions();
+                renderPrescriptions(document.getElementById('searchInput').value);
             }
         }
 

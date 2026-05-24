@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediPrescript - View Prescription</title>
+    <title>MediRx - View Prescription</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
     <!-- Loaded Noto Sans Devanagari for perfect universal cross-device Marathi rendering -->
@@ -81,7 +81,7 @@
             align-items: center; 
         }
         
-        /* CLEAN PROFESSIONAL A5 SLIP SHEET CONTAINER */
+        /* CLEAN PROFESSIONAL SLIP SHEET CONTAINER */
         .prescription-container {
             background: #ffffff !important;
             width: 5.8in; 
@@ -97,6 +97,7 @@
             position: relative;
             color: #222222;
             border-radius: 12px; 
+            display: block; 
         }
 
         /* 4 TO 5 LINES LETTERHEAD SPACING SYSTEM */
@@ -176,6 +177,7 @@
 
         .lab-hc-wrap {
             margin-left: 2.5rem; 
+            text-decoration: left;
         }
 
         .lab-vitd-wrap {
@@ -213,6 +215,15 @@
         .value-highlight {
             font-weight: bold;
             color: #000000;
+        }
+
+        /* ANNUAL TARGET FOLLOWUP PARAGRAPH SPECIFICATION */
+        .annual-followup-statement {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 1.5rem;
+            font-weight: bold;
+            color: #111111;
         }
 
         .footer { 
@@ -305,12 +316,16 @@
                 margin: 0 auto !important; 
                 position: relative !important; 
                 border-radius: 0px !important;
+                display: block !important; 
+                zoom: 0.9 !important;               /* Force 90% scale sizing */
+                transform: scale(0.9) !important;   /* Alternate engine scale fallback */
+                transform-origin: top center !important;
             }
             .action-buttons, .navbar { 
                 display: none !important; 
             }
             @page { 
-                size: A5; 
+                size: A4;                           /* Changed paper layout target to A4 */
                 margin: 0; 
             }
         }
@@ -364,7 +379,7 @@
     <!-- OVERLAY NAV -->
     <nav class="navbar">
         <div class="navbar-title"><i class="fas fa-eye"></i> View Slip</div>
-        <a href="list.html" class="nav-back-btn">
+        <a href="ipd.html" class="nav-back-btn">
             <i class="fas fa-arrow-left"></i> History Records
         </a>
     </nav>
@@ -401,63 +416,101 @@
                 <div style="color: #666;">Processing metrics...</div>
             </div>
 
+            <!-- SYSTEM INJECTED STATEMENT (GENERATED AT THE END OF MEDICATION FLOWS) -->
+            <div id="followupStatement" class="annual-followup-statement">
+                Annuals follow up with 1) Serum Homocystine and Ferritin 2) X ray <span id="outShoulder">Left</span> Shoulder TRUE AP and AXIAL view On <span id="outDate">30 oct</span> every year for follow up </div>
+
             <div class="footer">
                 <div>Printed: <span id="generatedTime">-</span></div>
             </div>
         </div>
 
         <!-- Glass Actions Container -->
-        <div class="action-buttons">
+        <div id="actionBlock" class="action-buttons">
             <button onclick="printCurrent()" class="btn btn-primary">
-                <i class="fas fa-print"></i> Print Document (A5)
+                <i class="fas fa-print"></i> Print Document (A4)
             </button>
-            <a href="generate.html" class="btn btn-secondary">
+            <a href="ipdgenerate.html" class="btn btn-secondary">
                 <i class="fas fa-plus"></i> New Sheet
             </a>
-            <a href="list.html" class="btn btn-secondary">
+            <a href="ipd.html" class="btn btn-secondary">
                 <i class="fas fa-list"></i> View History
             </a>
         </div>
     </div>
 
     <script>
+        let cachedPrescriptionRecord = null;
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Core processing of existing pipeline values
+            loadDataFromMemory();
+            
+            // Instantly render layout using storage objects
+            if (cachedPrescriptionRecord) {
+                // Prioritize explicit object properties from creation layout, fallback to global inputs if reading historical rows
+                const targetShoulder = cachedPrescriptionRecord.shoulderValue || cachedPrescriptionRecord.shoulder || localStorage.getItem('selectShoulder') || "Left";
+                const targetRawDate = cachedPrescriptionRecord.annualFollowUpDate && cachedPrescriptionRecord.annualFollowUpDate !== 'N/A' ? cachedPrescriptionRecord.annualFollowUpDate : localStorage.getItem('selectDate');
+
+                let formattedDateStr = "30 oct";
+                if (targetRawDate && targetRawDate !== 'N/A') {
+                    const parsedDate = new Date(targetRawDate);
+                    if (!isNaN(parsedDate.getTime())) {
+                        const day = parsedDate.getDate();
+                        const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                        const month = monthNames[parsedDate.getMonth()];
+                        formattedDateStr = `${day} ${month}`;
+                    }
+                }
+
+                // Map target parameters straight into downstream elements
+                document.getElementById('outShoulder').textContent = targetShoulder;
+                document.getElementById('outDate').textContent = formattedDateStr;
+
+                // Fire rendering pipelines safely
+                renderPrescriptionContent(cachedPrescriptionRecord);
+            }
+        });
+
+        function loadDataFromMemory() {
             const activeSessionItem = localStorage.getItem('currentPrescription');
             const index = localStorage.getItem('currentPrescriptionIndex');
             const prescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
             
             if (activeSessionItem) {
-                displayPrescription(JSON.parse(activeSessionItem));
+                cachedPrescriptionRecord = JSON.parse(activeSessionItem);
             }
-            else if (index !== null && prescriptions[parseInt(index)]) {
-                displayPrescription(prescriptions[parseInt(index)]);
+            else if (index !== null && prescriptions[parseInt(index, 10)]) {
+                cachedPrescriptionRecord = prescriptions[parseInt(index, 10)];
             } 
             else if (localStorage.getItem('prescriptionDate') || localStorage.getItem('patientName')) {
-                const legacyData = {
+                cachedPrescriptionRecord = {
                     date: localStorage.getItem('prescriptionDate'),
                     mrd: localStorage.getItem('prescriptionMrd'),
                     name: localStorage.getItem('patientName'),
                     hc: localStorage.getItem('labHc'),
                     fe: localStorage.getItem('labFe'),
-                    vitd: localStorage.getItem('labVitD')
+                    vitd: localStorage.getItem('labVitD'),
+                    shoulder: localStorage.getItem('selectShoulder'),
+                    annualFollowUpDate: localStorage.getItem('selectDate')
                 };
-                displayPrescription(legacyData);
             }
             else if (prescriptions.length > 0) {
-                displayPrescription(prescriptions[0]);
+                cachedPrescriptionRecord = prescriptions[0];
             }
             else {
-                const defaultSample = {
+                cachedPrescriptionRecord = {
                     date: new Date().toISOString(),
                     mrd: "MRD-PREVIEW",
                     name: "Sample History Record",
                     hc: "6.5",
                     fe: "15",
-                    vitd: "8"
+                    vitd: "8",
+                    shoulder: "Left",
+                    annualFollowUpDate: "2026-10-30"
                 };
-                displayPrescription(defaultSample);
             }
-        });
+        }
 
         function generateMedications(prescription) {
             const medications = [];
@@ -466,7 +519,7 @@
             const fe = parseFloat(prescription.fe !== undefined && prescription.fe !== 'N/A' ? prescription.fe : prescription.feValue);
             const vitd = parseFloat(prescription.vitd !== undefined && prescription.vitd !== 'N/A' ? prescription.vitd : prescription.vitdValue);
 
-            // HC (Hemoglobin) Logic
+            // HC Logic
             if (!isNaN(hc)) {
                 if (hc >= 7 && hc <= 19) {
                     medications.push({ 
@@ -493,7 +546,7 @@
                 }
             }
 
-            // Fe (Ferritin) Logic
+            // Fe Logic
             if (!isNaN(fe)) {
                 if (fe <= 20) {
                     medications.push({ 
@@ -548,7 +601,7 @@
                     medications.push({ 
                         name: "Uprise/Tayo 60k", 
                         dosageEn: "Once a month", dosageMr: "महिन्यातून एकदा", 
-                        durationEn: "Forever", durationMr: "नेहमी" 
+                        durationMr: "नेहमी", durationEn: "Forever" 
                     });
                 } else if (vitd >= 20) {
                     medications.push({ 
@@ -575,7 +628,7 @@
             return medications;
         }
 
-        function displayPrescription(prescription) {
+        function renderPrescriptionContent(prescription) {
             const rawDate = prescription.date || prescription.visitDate;
             document.getElementById('prescriptionDate').textContent = rawDate ? new Date(rawDate).toLocaleDateString('en-GB') : '-';
             document.getElementById('prescriptionMrd').textContent = prescription.mrd || prescription.patientMrd || 'N/A';
@@ -597,7 +650,6 @@
             let skipNextBullet = false;
 
             meds.forEach((med) => {
-                // Formatting layout: English Text first, followed directly by Marathi inline container tags
                 const dosageString = `${med.dosageEn} <span class="marathi-text">(${med.dosageMr})</span>`;
                 const durationString = `${med.durationEn} <span class="marathi-text">(${med.durationMr})</span>`;
 
@@ -617,7 +669,6 @@
                     bulletNumber++;
                 }
 
-                // Check text parameters using the English tracking string to catch subsequent continuous steps
                 if (med.durationEn && med.durationEn.toLowerCase().includes("start following tablet")) {
                     skipNextBullet = true;
                 }
@@ -633,7 +684,49 @@
         }
 
         function printCurrent() {
+            // 1. Create a dynamic style element for strict centering and 90% scaling during print
+            const printStyle = document.createElement('style');
+            printStyle.id = 'dynamic-print-alignment';
+            printStyle.innerHTML = `
+                @media print {
+                    body, .main-container {
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                    }
+                    .prescription-container {
+                        margin: 0 auto !important;
+                        zoom: 0.9 !important;
+                        transform: scale(0.9) !important;
+                        transform-origin: top center !important;
+                    }
+                    .patient-meta-inline {
+                        margin: 0 auto !important;
+                        align-items: center !important;
+                    }
+
+                    @page { 
+                        size: A5 !important; 
+                        scale : 100%;
+                        margin: 0 !important; 
+                    }
+                }
+            `;
+            
+            // 2. Inject the alignment patch into the head area
+            document.head.appendChild(printStyle);
+            
+            // 3. Trigger the standard hardware print pipeline
             window.print();
+            
+            // 4. Safely remove the styling rule once control returns to the app viewport
+            setTimeout(() => {
+                const targetStyle = document.getElementById('dynamic-print-alignment');
+                if (targetStyle) {
+                    targetStyle.remove();
+                }
+            }, 500);
         }
     </script>
 </body>

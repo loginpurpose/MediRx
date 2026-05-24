@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediRx login page </title>
+    <!-- Bootstrap 5 CSS for base structured layout -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2e1065 0%, #701a75 40%, #fbcfe8 100%);
+            background-size: cover;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* BACK BUTTON STRIP */
+        .back-nav {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 1rem;
+            z-index: 10;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: #ffffff;
+            color: #701a75;
+            transform: translateX(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* DYNAMIC APP WRAPPER SYSTEM */
+        .interactive-wrapper {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            margin-top: 4rem; /* Starts lower down for center focus */
+        }
+
+        /* Shift up when a cloud is active */
+        .interactive-wrapper.active-mode {
+            margin-top: 0.5rem;
+        }
+
+        /* CEILING HARNESS FOR THE SWINGING SYSTEM */
+        .clouds-container {
+            display: flex;
+            justify-content: center;
+            gap: 4.5rem;
+            width: 100%;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 5;
+            margin-bottom: 3rem;
+        }
+
+        .hanging-cloud-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: top center;
+            animation: swing 4s ease-in-out infinite alternate;
+            width: 260px;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .hanging-cloud-wrapper:nth-child(2) {
+            animation-delay: -0.8s;
+        }
+
+        /* String lines hanging from ceiling */
+        .hanging-cloud-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -4rem;
+            width: 2px;
+            height: 4.5rem;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0.15));
+            transition: all 0.6s ease;
+        }
+
+        /* INITIAL STATE: BIG LUXURIOUS CLOUDS */
+        .cloud-element {
+            position: relative;
+            width: 240px;
+            height: 110px;
+            background: #ffffff;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
+            box-shadow: inset 0 -8px 15px rgba(112, 26, 117, 0.1), inset 0 4px 10px rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            z-index: 2;
+        }
+
+        /* Cloud Fluff Bumps */
+        .cloud-element::before, .cloud-element::after {
+            content: '';
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            z-index: -1;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .cloud-element::before {
+            width: 110px;
+            height: 110px;
+            top: -50px;
+            left: 30px;
+        }
+
+        .cloud-element::after {
+            width: 135px;
+            height: 135px;
+            top: -65px;
+            right: 25px;
+        }
+
+        /* HOVER EFFECT (Only when not shrunk down) */
+        .interactive-wrapper:not(.active-mode) .cloud-element:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 20px 30px rgba(255, 25px, 255, 0.4));
+        }
+
+        /* Cloud Inner Text scaling rules */
+        .cloud-content {
+            text-align: center;
+            z-index: 5;
+            transition: all 0.6s ease;
+        }
+
+        .cloud-content h3 {
+            font-size: 1.3rem;
+            color: #2e1065;
+            font-weight: 700;
+            margin: 0;
+            transition: all 0.6s ease;
+        }
+
+        .cloud-content span {
+            font-size: 0.8rem;
+            color: #701a75;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 2px;
+            transition: all 0.6s ease;
+        }
+
+        /* DYNAMIC SHRUNK STATE (When active-mode is on) */
+        .active-mode .clouds-container {
+            gap: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .active-mode .hanging-cloud-wrapper {
+            width: 170px;
+        }
+
+        .active-mode .cloud-element {
+            width: 160px;
+            height: 70px;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+        }
+
+        .active-mode .cloud-element::before {
+            width: 75px;
+            height: 75px;
+            top: -35px;
+            left: 20px;
+        }
+
+        .active-mode .cloud-element::after {
+            width: 90px;
+            height: 90px;
+            top: -45px;
+            right: 15px;
+        }
+
+        .active-mode .cloud-content h3 {
+            font-size: 0.95rem;
+        }
+
+        .active-mode .cloud-content span {
+            font-size: 0.6rem;
+        }
+
+        /* SWING AXIS FOR CLOUDS */
+        @keyframes swing {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        /* DISPLAY REGION FOR CONTAINERS */
+        .cards-display-area {
+            width: 100%;
+            max-width: 460px;
+            min-height: 0;
+            position: relative;
+            transition: all 0.5s ease;
+            z-index: 4;
+        }
+
+        /* COMPACT GLASSMORPHIC PRESCRIPTION CARDS (FADE UP DESIGN) */
+        .prescription-card {
+            background: rgba(255, 255, 255, 0.11);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            padding: 2rem 1.8rem;
+            width: 100%;
+            text-align: center;
+            color: white;
+            display: none;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95); /* Deep initial drop for elegant fade-up */
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Activated Dynamic States */
+        .prescription-card.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .card-emoji {
+            font-size: 2.2rem;
+            margin-bottom: 0.6rem;
+            display: inline-block;
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .prescription-card h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+
+        .prescription-card p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.82);
+            margin-bottom: 1.6rem;
+            line-height: 1.5;
+        }
+
+        /* ACTION BUTTONS */
+        .creative-btn {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-regular { background: #ffffff; color: #2e1065; }
+        .btn-annual { background: #fbcfe8; color: #701a75; }
+
+        .creative-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        /* HIGH-VISIBILITY, CRYSTAL CLEAR EMOJI MARQUEE STRIP */
+        .marquee-wrapper {
+            width: 100%;
+            max-width: 550px;
+            overflow: hidden;
+            margin-top: 2.5rem;
+            white-space: nowrap;
+            padding: 0.6rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            opacity: 1; /* Removed transparency to prevent background bleed distortion */
+            backdrop-filter: none; /* Removed filter inheritance constraints entirely */
+            -webkit-backdrop-filter: none;
+            z-index: 10; /* Forces independent browser layer processing */
+            position: relative;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marqueeAnimation 25s linear infinite;
+            font-size: 1.35rem;
+            letter-spacing: 2rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); /* Makes emojis stand out crisply */
+        }
+
+        @keyframes marqueeAnimation {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+
+        /* ADAPTIVE MOBILE VIEWPORTS */
+        @media (max-width: 576px) {
+            .clouds-container { gap: 1.5rem; }
+            .cloud-element { width: 170px; height: 80px; }
+            .cloud-element::before { width: 80px; height: 80px; top: -35px; left: 20px; }
+            .cloud-element::after { width: 95px; height: 95px; top: -45px; right: 15px; }
+
+            .active-mode .cloud-element { width: 120px; height: 55px; }
+            .active-mode .cloud-element::before { width: 55px; height: 55px; top: -25px; left: 15px; }
+            .active-mode .cloud-element::after { width: 65px; height: 65px; top: -30px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BACK TO INDEX NAVIGATION LINK -->
+    <div class="back-nav">
+        <a href="index.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Main
+        </a>
+    </div>
+
+    <!-- MAIN INTERACTIVE APP WRAPPER -->
+    <div id="appWrapper" class="interactive-wrapper">
+
+        <!-- CEILING SWINGING CLOUDS TRACK -->
+        <div class="clouds-container">
+            <!-- Cloud Element: Regular Configuration -->
+            <div class="hanging-cloud-wrapper">
+                <div class="cloud-element" onclick="toggleContainer('regular')">
+                    <div class="cloud-content">
+                        <h3>Regular 💊</h3>
+                        <span>Prescription</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Element: Annual Configuration -->
+            <div class="hanging-cloud-wrapper">
+                <div class="cloud-element" onclick="toggleContainer('annual')">
+                    <div class="cloud-content">
+                        <h3>Annual 📊</h3>
+                        <span>Prescription</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEWPORT BASE FOR DISPATCHING DYNAMIC CARDS -->
+        <div class="cards-display-area">
+            
+            <!-- REGULAR PRESCRIPTION SLIP CONTAINER -->
+            <div id="regularCard" class="prescription-card">
+                <div class="card-emoji">📝</div>
+                <h2>Regular Prescription</h2>
+                <p>Access day-to-day metrics tracking, active clinical dosage updates, and continuous patient slip logs.</p>
+                <button class="creative-btn btn-regular" onclick="window.location.href='user.html'">
+                    Proceed to Dashboard <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- ANNUAL PRESCRIPTION SLIP CONTAINER -->
+            <div id="annualCard" class="prescription-card">
+                <div class="card-emoji">🏥</div>
+                <h2>Annual Prescription</h2>
+                <p>Review comprehensive IPD profiles, long-term therapeutic regimens, and yearly corporate medical reports.</p>
+                <button class="creative-btn btn-annual" onclick="window.location.href='ipd.html'">
+                    Enter IPD Module <i class="fas fa-hospital"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- RUNNING EMOJI MARQUEE (SECURED AT THE BOTTOM OF CARDS GRID WITH CRISP RNDR) -->
+        <div class="marquee-wrapper">
+            <div class="marquee-content">
+                ✨ 🩺 🏥 📋 ✨ 🩺 🏥 📋 ✨ 🩺 🏥 📋 ✨ 🩺 🏥 📋 ✨ 🩺 🏥 📋
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Manages shifting transitions timelines and layout morphing seamlessly
+        function toggleContainer(type) {
+            const wrapper = document.getElementById('appWrapper');
+            const regularCard = document.getElementById('regularCard');
+            const annualCard = document.getElementById('annualCard');
+
+            if (type === 'regular') {
+                if (regularCard.classList.contains('active')) {
+                    regularCard.classList.remove('active');
+                    wrapper.classList.remove('active-mode');
+                } else {
+                    annualCard.classList.remove('active');
+                    wrapper.classList.add('active-mode');
+                    
+                    setTimeout(() => {
+                        regularCard.classList.add('active');
+                    }, 200);
+                }
+            } else if (type === 'annual') {
+                if (annualCard.classList.contains('active')) {
+                    annualCard.classList.remove('active');
+                    wrapper.classList.remove('active-mode');
+                } else {
+                    regularCard.classList.remove('active');
+                    wrapper.classList.add('active-mode');
+                    
+                    setTimeout(() => {
+                        annualCard.classList.add('active');
+                    }, 200);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

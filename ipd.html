@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediRx - User Dashboard</title>
+    <title>MediRx - Annual Prescription Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #7b169a 0%, #701a75 40%, #fbcfe8 100%);
+            background: linear-gradient(135deg, #828ef9 0%, #8ab1d9 40%, #dbefee 100%);
             background-size: cover;
             background-attachment: fixed;
             line-height: 1.6;
@@ -29,7 +29,7 @@
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 30 rgba(0, 0, 0, 0.1);
             padding: 1rem 2rem;
             position: sticky;
             top: 0;
@@ -201,7 +201,7 @@
         .action-card p {
             color: #3d0a64;
             font-size: 0.95rem;
-            font-weight:bold ;
+            font-weight: bold;
         }
 
         /* RESPONSIVE */
@@ -231,13 +231,14 @@
                 MediRx
             </div>
             <ul class="nav-menu">
-                <li class="nav-item active" onclick="goTo('user.html')">
+                <!-- Navigation anchors updated relative to target definitions -->
+                <li class="nav-item active" onclick="goTo('#')">
                     <i class="fas fa-home"></i> Home
                 </li>
-                <li class="nav-item" onclick="goTo('generate.html')">
+                <li class="nav-item" onclick="goTo('ipdgenerate.html')">
                     <i class="fas fa-plus"></i> Generate
                 </li>
-                <li class="nav-item" onclick="goTo('list.html')">
+                <li class="nav-item" onclick="goTo('ipdlist.html')">
                     <i class="fas fa-history"></i> History
                 </li>
                 <li class="nav-item" onclick="logout()">
@@ -276,12 +277,13 @@
         </section>
 
         <section class="actions-grid">
-            <div class="action-card" onclick="goTo('generate.html')">
+            <!-- Action card titles modified per requested terminology changes -->
+            <div class="action-card" onclick="goTo('ipdgenerate.html')">
                 <div class="action-icon"><i class="fas fa-plus-circle"></i></div>
-                <div class="action-title">New Prescription</div>
+                <div class="action-title">Annual Prescription</div>
                 <p>Generate prescription for new patient</p>
             </div>
-            <div class="action-card" onclick="goTo('list.html')">
+            <div class="action-card" onclick="goTo('ipdlist.html')">
                 <div class="action-icon"><i class="fas fa-list"></i></div>
                 <div class="action-title">Prescription History</div>
                 <p>View, edit and print past prescriptions</p>
@@ -290,9 +292,11 @@
     </div>
 
     <script>
-        // Navigation
+        // Navigation Logic
         function goTo(page) {
-            window.location.href = page;
+            if(page !== '#') {
+                window.location.href = page;
+            }
         }
 
         function logout() {
@@ -316,7 +320,9 @@
         });
     </script>
 </body>
-<footer><marquee behavior="slide" direction="left" scrollamount="12" style="color: rgb(82, 8, 63); font-size: 20px;">
-    <b>✨Welcome to Medix Portal — 🩺 Your health, simplified — track, manage, and care with Medix 📈✨....</b>
-</marquee></footer>
+<footer>
+    <marquee behavior="slide" direction="left" scrollamount="12" style="color: rgb(82, 8, 63); font-size: 20px;">
+        <b>✨Welcome to Medix Portal — 🩺 Your health, simplified — track, manage, and care with Medix 📈✨....</b>
+    </marquee>
+</footer>
 </html>
